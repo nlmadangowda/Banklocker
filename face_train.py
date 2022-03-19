@@ -20,9 +20,10 @@ knownNames = []
 for (i, imagePath) in enumerate(imagePaths):
 	# extract the person name from the image path
 	print("[INFO] processing image {}/{}".format(i + 1,len(imagePaths)))
-	name = imagePath.split(os.path.sep)
+	name = imagePath.split(os.path.sep)[-2]
 	# load the input image and convert it from RGB (OpenCV ordering)
 	# to dlib ordering (RGB)
+	print(name)
 	image = cv2.imread(imagePath)
 	rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 	# detect the (x, y)-coordinates of the bounding boxes
@@ -40,7 +41,7 @@ for (i, imagePath) in enumerate(imagePaths):
 # dump the facial encodings + names to disk
 print("[INFO] serializing encodings…")
 data = {'encodings': knownEncodings, 'names': knownNames}
-f = open('encodings', 'wb')
+f = open('encodings.p', 'wb')
 f.write(pickle.dumps(data))
 f.close()
 print("[INFO] serializing encodings:Done")
