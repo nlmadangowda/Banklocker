@@ -9,51 +9,22 @@ import pickle
 import time
 import cv2
 
-
-import speech_recognition as sr
-
-
-
-listening = True
-
-while listening:
-    with sr.Microphone() as source:
-        recognizer = sr.Recognizer()
-        recognizer.adjust_for_ambient_noise(source)
-        recognizer.dynamic_energy_threshold = 3000
-        try:
-            print("Listening....")
-            audio = recognizer.listen(source,timeout=5.0)
-            response = recognizer.recognize_google(audio)
-            data1= "hai"
-            if data1 == response:
-              print("cmd match")
-              break
-            else:
-              print("cmd not match")
-        except sr.UnknownValueError:
-            print("failed")
-
-
-
-
-
 #Initialize 'currentname' to trigger only when a new person is identified.
 currentname = "unknown"
 #Determine faces from encodings.pickle file model created from train_model.py
-encodingsP = "encodings.p"
+encodingsP = "encodings.pickle"
 #use this xml file
 #https://github.com/opencv/opencv/blob/master/data/haarcascades/haarcascade_frontalface_default.xml
 cascade = "haarcascade_frontalface_default.xml"
 
 # load the known faces and embeddings along with OpenCV's Haar
 # cascade for face detection
-print("[INFO] loading encodings + face detector…")
+print("[INFO] loading encodings + face detector...")
 data = pickle.loads(open(encodingsP, "rb").read())
-detector = cv2.CascadeClassifier(cv2.data.haarcascades + cascade)
+detector = cv2.CascadeClassifier(cascade)
 
 # initialize the video stream and allow the camera sensor to warm up
-print("[INFO] starting video stream…")
+print("[INFO] starting video stream...")
 vs = VideoStream(src=0).start()
 #vs = VideoStream(usePiCamera=True).start()
 time.sleep(2.0)
@@ -107,6 +78,7 @@ while True:
 			# each recognized face face
 			for i in matchedIdxs:
 				name = data["names"][i]
+				
 				counts[name] = counts.get(name, 0) + 1
 
 			# determine the recognized face with the largest number
@@ -124,7 +96,7 @@ while True:
 
 	# loop over the recognized faces
 	for ((top, right, bottom, left), name) in zip(boxes, names):
-		# draw the predicted face name on the image – color is in BGR
+		# draw the predicted face name on the image - color is in BGR
 		cv2.rectangle(frame, (left, top), (right, bottom),
 			(0, 255, 0), 2)
 		y = top - 15 if top - 15 > 15 else top + 15

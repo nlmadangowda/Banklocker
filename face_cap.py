@@ -8,10 +8,6 @@ import face_recognition
 import pickle
 
 def cap_face():
-    n= len(sys.argv)
-    if((n-1)!=1):
-        print("Pass the user name in the following foramt \"user name\" (or) \"username\"")
-        quit()
     name = sys.argv[1]
     cam = cv2.VideoCapture(0)
     cv2.namedWindow("press space to take a photo", cv2.WINDOW_NORMAL)
@@ -65,6 +61,8 @@ def tarin_face():
     # initialize the list of known encodings and known names
     knownEncodings = []
     knownNames = []
+    knowncmd = []
+    voice_cmd = sys.argv[2]
 
     # loop over the image paths
     for (i, imagePath) in enumerate(imagePaths):
@@ -87,15 +85,22 @@ def tarin_face():
             # encodings
             knownEncodings.append(encoding)
             knownNames.append(name)
+            knowncmd.append(voice_cmd)
 
     # dump the facial encodings + names to disk
     print("[INFO] serializing encodings…")
-    data = {'encodings': knownEncodings, 'names': knownNames}
+    data = {'encodings': knownEncodings, 'names': knownNames, 'voice_cmd' : knowncmd}
     f = open('encodings.p', 'wb')
     f.write(pickle.dumps(data))
     f.close()
     print("[INFO] serializing encodings:Done")
 
+n= len(sys.argv)
+print("Pass the user name in the following foramt \"user name\" (or) \"username\"")
+
+if((n-1)!=2):
+    print("Pass the user name in the following foramt \"user name\" (or) \"username\"")
+    quit()
 
 cap_face()
 tarin_face()
