@@ -1,7 +1,6 @@
 #! /usr/bin/python
 
 # import the necessary packages
-from cmath import e
 from imutils.video import VideoStream
 from imutils.video import FPS
 import face_recognition
@@ -9,25 +8,22 @@ import imutils
 import pickle
 import time
 import cv2
-import speech_recognition as sr
+import time
 import RPi.GPIO as GPIO
-from pushbullet import Pushbullet
 
- 
-GPIO.setwarnings(False)
 
-GPIO.setmode(GPIO.BCM)
- 
-RELAIS_1_GPIO = 4
-BUZZER_1_GPIO = 17
 
-GPIO.setup(RELAIS_1_GPIO, GPIO.OUT) # GPIO Assign mode
-GPIO.output(RELAIS_1_GPIO, True) # out
 
-GPIO.setup(BUZZER_1_GPIO, GPIO.OUT) # GPIO Assign mode
-GPIO.output(BUZZER_1_GPIO, True) # out
-time.sleep(1)
-GPIO.output(BUZZER_1_GPIO, False) # out
+#GPIO.setmode(GPIO.BCM)
+#GPIO.setup(17, GPIO.OUT)
+#GPIO.output(17, GPIO.LOW)
+#
+#time.sleep(0.25)
+#
+#GPIO.output(17, GPIO.HIGH)
+#GPIO.cleanup()
+
+import speech_recognition as sr
 
 #Initialize 'currentname' to trigger only when a new person is identified.
 currentname = "unknown"
@@ -41,55 +37,46 @@ cascade = "haarcascade_frontalface_default.xml"
 # cascade for face detection
 print("[INFO] loading encodings + face detector…")
 data = pickle.loads(open(encodingsP, "rb").read())
-
-pb = Pushbullet("o.iWbvPPobBeBKwDBJICBIBKUMaKAwb0Ay")
-
-knowncmd = data["voice_cmd"]
-print(knowncmd)
+detector = cv2.CascadeClassifier(cv2.data.haarcascades + cascade)
 
 listening = True
-
-# while True:
+ 
 while listening:
-	match  = 0
-	with sr.Microphone() as source:
-		recognizer = sr.Recognizer()
-		recognizer.adjust_for_ambient_noise(source)
-		recognizer.dynamic_energy_threshold = 3000
-#		audio = recognizer.listen(source,timeout=10.0)
-
-		try:
-			print("Listening Say your cmd within 5 Sec....")
-			audio = recognizer.listen(source,timeout=10.0)
-			response = recognizer.recognize_google(audio)
-			str = response.lower()
-			print(str)
-			for cmd in knowncmd:
-				data1 = cmd.lower()
-				if data1 == str:
-					match = 1
-					print("cmd match")
-					break
-				else:
-					print("cmd not match")
-			if match == 1:
-				break
-		except sr.UnknownValueError:
-			print("failed")
-		except sr.RequestError as e:
-			print("Req error")
-		except sr.WaitTimeoutError as k :
-			print("time out")
+    with sr.Microphone() as source:
+        recognizer = sr.Recognizer()
+        recognizer.adjust_for_ambient_noise(source)
+        recognizer.dynamic_energy_threshold = 3000
+        try:
+            print("Listening....")
+            audio = recognizer.listen(source,timeout=0)
+            response = recognizer.recognize_google(audio)
+            data1= "hai"
+            if data1 == response:
+              print("cmd match")
+              break
+            else:
+              print("cmd not match")
+        except sr.UnknownValueError:
+            print("failed")
 
 
-detector = cv2.CascadeClassifier(cv2.data.haarcascades + cascade)
+
+
+
 
 # initialize the video stream and allow the camera sensor to warm up
 print("[INFO] starting video stream…")
 vs = VideoStream(src=0).start()
 #vs = VideoStream(usePiCamera=True).start()
 time.sleep(2.0)
+index = -1
+cap = cv2.VideoCapture(index,cv2.CAP_V4L)
+while(cap.isOpened()):
 
+# Capture frame-by-frame
+    ret, frame = cap.read()
+    if ret:
+        assert not isinstance(frame,type(None)), 'frame not found'
 # start the FPS counter
 fps = FPS().start()
 
@@ -145,27 +132,14 @@ while True:
 			# of votes (note: in the event of an unlikely tie Python
 			# will select first entry in the dictionary)
 			name = max(counts, key=counts.get)
-			GPIO.output(RELAIS_1_GPIO, True)
+			
 			#If someone in your dataset is identified, print their name on the screen
 			if currentname != name:
-				GPIO.output(BUZZER_1_GPIO,False)
-				GPIO.output(RELAIS_1_GPIO, False)
 				currentname = name
 				print(currentname)
-				dev = pb.get_device(name)
-				push = dev.push_note("Alert!!", "opened")
-				time.sleep(4)
-				GPIO.output(RELAIS_1_GPIO, True)
-#			else:
-#				GPIO.output(RELAIS_1_GPIO, True) # out
+		
 		# update the list of names
 		names.append(name)
-		if name == 'Unknown':
-			GPIO.output(BUZZER_1_GPIO,True)
-			GPIO.output(RELAIS_1_GPIO, True)
-			currentname = 'Unknown'
-		else:
-			GPIO.output(BUZZER_1_GPIO,False)
 
 	# loop over the recognized faces
 	for ((top, right, bottom, left), name) in zip(boxes, names):

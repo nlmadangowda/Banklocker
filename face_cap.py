@@ -82,7 +82,8 @@ def tarin_face():
         # loop over the encodings
         for encoding in encodings:
             # add each encoding + name to our set of known names and
-            # encodings
+            # encodi
+            print("adding user details")
             knownEncodings.append(encoding)
             knownNames.append(name)
             knowncmd.append(voice_cmd)
@@ -96,11 +97,9 @@ def tarin_face():
     print("[INFO] serializing encodings:Done")
 
 n= len(sys.argv)
-print("Pass the user name in the following foramt \"user name\" (or) \"username\"")
 
 if((n-1)!=2):
     print("Pass the user name in the following foramt \"user name\" (or) \"username\"")
     quit()
-
 cap_face()
 tarin_face()
